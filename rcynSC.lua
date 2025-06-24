@@ -1,5 +1,5 @@
---// rcynAIM ULTRA-LITE FINAL FIXED SMOOTH AIM 😈🎯
--- Aimbot sekarang makin smooth & scalable: makin tinggi = makin OP, makin rendah = makin legit
+--// rcynAIM ULTRA-LITE FINAL V2 - Aimbot Brutal Update 🔥🔒
+-- Aimbot 50% = semi lock saat nembak. Aimbot 100% = full lock brutal sampai musuh mati 😈
 
 local gui = Instance.new("ScreenGui", game.CoreGui)
 local frame = Instance.new("Frame")
@@ -12,7 +12,7 @@ frame.AnchorPoint = Vector2.new(0.5, 0.5)
 frame.Visible = true
 frame.Parent = gui
 
--- Minimize icon muncul saat UI disembunyiin
+-- Icon restore
 local restoreIcon = Instance.new("TextButton")
 restoreIcon.Size = UDim2.new(0, 30, 0, 30)
 restoreIcon.Position = UDim2.new(0, 10, 1, -40)
@@ -23,7 +23,7 @@ restoreIcon.BorderSizePixel = 0
 restoreIcon.Visible = false
 restoreIcon.Parent = gui
 
--- Header + tombol minimize
+-- Header + minimize
 local title = Instance.new("TextLabel", frame)
 title.Size = UDim2.new(0.85, 0, 0, 30)
 title.Position = UDim2.new(0, 5, 0, 0)
@@ -66,6 +66,7 @@ local aimbotLevel = 0.2
 local espOn = false
 local magicOn = false
 local smoothness = 0.02
+local lockedTarget = nil
 
 local btnAimbot = createBtn("Aimbot: 20%", 40)
 local btnESP = createBtn("ESP", 80)
@@ -74,8 +75,8 @@ local btnMagic = createBtn("Magic Bullet", 120)
 btnAimbot.MouseButton1Click:Connect(function()
     if aimbotLevel == 0.2 then aimbotLevel = 0.3 smoothness = 0.015 btnAimbot.Text = "Aimbot: 30%"
     elseif aimbotLevel == 0.3 then aimbotLevel = 0.5 smoothness = 0.01 btnAimbot.Text = "Aimbot: 50%"
-    elseif aimbotLevel == 0.5 then aimbotLevel = 1 smoothness = 0.003 btnAimbot.Text = "Aimbot: 100%"
-    else aimbotLevel = 0.2 smoothness = 0.02 btnAimbot.Text = "Aimbot: 20%" end
+    elseif aimbotLevel == 0.5 then aimbotLevel = 1 smoothness = 0.002 btnAimbot.Text = "Aimbot: 100%"
+    else aimbotLevel = 0.2 smoothness = 0.02 lockedTarget = nil btnAimbot.Text = "Aimbot: 20%" end
 end)
 
 btnESP.MouseButton1Click:Connect(function()
@@ -93,7 +94,6 @@ local Players = game:GetService("Players")
 local LocalPlayer = Players.LocalPlayer
 local Mouse = LocalPlayer:GetMouse()
 local Cam = workspace.CurrentCamera
-local currentTarget = nil
 
 function getTarget()
     local closest, dist = nil, math.huge
@@ -132,7 +132,6 @@ function applyESP()
     end
 end
 
--- Aimbot smooth system
 function smoothAim(current, targetPos)
     local direction = (targetPos - current.Position).Unit
     local newLook = current.Position + direction * aimbotLevel
@@ -141,10 +140,31 @@ end
 
 task.spawn(function()
     while task.wait(0.02) do
-        currentTarget = getTarget()
-        if currentTarget and aimbotLevel > 0 then
-            Cam.CFrame = smoothAim(Cam.CFrame, currentTarget.Position)
+        local current = getTarget()
+
+        if aimbotLevel == 1 then -- 100% brutal lock sampe mati
+            if lockedTarget == nil or not lockedTarget:IsDescendantOf(workspace) then
+                lockedTarget = current
+            end
+            if lockedTarget then
+                Cam.CFrame = Cam.CFrame:Lerp(CFrame.new(Cam.CFrame.Position, lockedTarget.Position), 0.2)
+            end
+        elseif aimbotLevel == 0.5 then -- 50% lock saat nembak
+            local tool = LocalPlayer.Character and LocalPlayer.Character:FindFirstChildOfClass("Tool")
+            if tool and tool:IsA("Tool") and tool:FindFirstChild("Handle") then
+                if current then
+                    lockedTarget = current
+                    Cam.CFrame = Cam.CFrame:Lerp(CFrame.new(Cam.CFrame.Position, lockedTarget.Position), 0.1)
+                end
+            else
+                lockedTarget = nil
+            end
+        else -- normal smooth
+            if current then
+                Cam.CFrame = smoothAim(Cam.CFrame, current.Position)
+            end
         end
+
         if magicOn then
             local e = game:GetService("ReplicatedStorage"):FindFirstChild("Events")
             if e and e:FindFirstChild("Shoot") then
@@ -155,8 +175,9 @@ task.spawn(function()
                 end
             end
         end
+
         if espOn then applyESP() end
     end
 end)
 
-print("✅ rcynAIM FINAL SMOOTH AIM ✅")
+print("✅ rcynAIM FINAL V2 - SMOOTH & BRUTAL LOCK AIM ✅")
