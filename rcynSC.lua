@@ -1,52 +1,66 @@
---// rcynAIM ULTRA-LITE FINAL V3 😈💻
--- Update: Aim Prediction + No Recoil + Brutal ESP Mode + Aimbot Legit Refinement
+--// rcynSC.lua FINAL V5 😈⚙️
+-- Tambahan: MINIMIZE tombol + ESP BRUTAL (kotak, warna-warni, full visual)
 
+-- [[ LOADING UI ]] --
 local gui = Instance.new("ScreenGui", game.CoreGui)
-local frame = Instance.new("Frame")
+local blur = Instance.new("BlurEffect", game.Lighting)
+blur.Size = 24
+
+local frame = Instance.new("Frame", gui)
+frame.Size = UDim2.new(0, 400, 0, 120)
+frame.Position = UDim2.new(0.5, -200, 0.5, -60)
+frame.BackgroundColor3 = Color3.fromRGB(15, 15, 15)
+frame.BorderSizePixel = 0
+frame.BackgroundTransparency = 0.1
+
+local text = Instance.new("TextLabel", frame)
+text.Size = UDim2.new(1, 0, 1, 0)
+text.Text = "⚡ Memuat rcynAIM System..."
+text.Font = Enum.Font.GothamBlack
+text.TextColor3 = Color3.fromRGB(255,100,100)
+text.TextSize = 24
+text.BackgroundTransparency = 1
+
+wait(3.5)
+
+-- [[ UI UTAMA ]] --
+local mainGui = Instance.new("ScreenGui", game.CoreGui)
+local frame = Instance.new("Frame", mainGui)
 frame.Name = "rcynAIM_UI"
 frame.Size = UDim2.new(0, 260, 0, 260)
 frame.Position = UDim2.new(0.5, -130, 0.5, -130)
 frame.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
 frame.BorderSizePixel = 0
 frame.AnchorPoint = Vector2.new(0.5, 0.5)
-frame.Visible = true
-frame.Parent = gui
 
-local restoreIcon = Instance.new("TextButton")
-restoreIcon.Size = UDim2.new(0, 30, 0, 30)
-restoreIcon.Position = UDim2.new(0, 10, 1, -40)
-restoreIcon.Text = "🅡"
-restoreIcon.TextColor3 = Color3.new(1,1,1)
-restoreIcon.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
-restoreIcon.BorderSizePixel = 0
-restoreIcon.Visible = false
-restoreIcon.Parent = gui
+local minimizeBtn = Instance.new("TextButton", frame)
+minimizeBtn.Size = UDim2.new(0, 30, 0, 30)
+minimizeBtn.Position = UDim2.new(1, -35, 0, 5)
+minimizeBtn.Text = "🔻"
+minimizeBtn.Font = Enum.Font.GothamBold
+minimizeBtn.TextSize = 14
+minimizeBtn.TextColor3 = Color3.new(1,1,1)
+minimizeBtn.BackgroundColor3 = Color3.fromRGB(35,35,35)
 
-local title = Instance.new("TextLabel", frame)
-title.Size = UDim2.new(0.85, 0, 0, 30)
-title.Position = UDim2.new(0, 5, 0, 0)
-title.Text = "🔥 rcyn ULTRA"
-title.TextColor3 = Color3.fromRGB(255, 255, 255)
-title.Font = Enum.Font.GothamBold
-title.TextSize = 16
-title.BackgroundTransparency = 1
+local restoreBtn = Instance.new("TextButton", mainGui)
+restoreBtn.Size = UDim2.new(0, 30, 0, 30)
+restoreBtn.Position = UDim2.new(0, 10, 1, -40)
+restoreBtn.Text = "🅡"
+restoreBtn.TextColor3 = Color3.new(1,1,1)
+restoreBtn.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
+restoreBtn.BorderSizePixel = 0
+restoreBtn.Visible = false
 
-local minBtn = Instance.new("TextButton", frame)
-minBtn.Size = UDim2.new(0, 30, 0, 30)
-minBtn.Position = UDim2.new(1, -35, 0, 0)
-minBtn.Text = "🔻"
-minBtn.TextColor3 = Color3.new(1,1,1)
-minBtn.BackgroundColor3 = Color3.fromRGB(30,30,30)
-minBtn.BorderSizePixel = 0
-minBtn.MouseButton1Click:Connect(function()
+minimizeBtn.MouseButton1Click:Connect(function()
     frame.Visible = false
-    restoreIcon.Visible = true
+    restoreBtn.Visible = true
 end)
-restoreIcon.MouseButton1Click:Connect(function()
+restoreBtn.MouseButton1Click:Connect(function()
     frame.Visible = true
-    restoreIcon.Visible = false
+    restoreBtn.Visible = false
 end)
 
+-- [[ MENU ]] --
 local function createBtn(txt, y)
     local b = Instance.new("TextButton", frame)
     b.Size = UDim2.new(0.9, 0, 0, 30)
@@ -87,13 +101,12 @@ btnRecoil.MouseButton1Click:Connect(function()
     btnRecoil.Text = noRecoil and "No Recoil: ON" or "No Recoil: OFF"
 end)
 
--- Base logic
+-- [[ CHEAT CORE ]] --
 local Players, LocalPlayer, Cam = game:GetService("Players"), game:GetService("Players").LocalPlayer, workspace.CurrentCamera
-local lockedTarget = nil
 function getTarget()
     local closest, dist = nil, math.huge
     for _,p in pairs(Players:GetPlayers()) do
-        if p ~= LocalPlayer and p.Character and p.Character:FindFirstChild("Head") and p.Character:FindFirstChild("Humanoid") and p.Character.Humanoid.Health > 0 then
+        if p ~= LocalPlayer and p.Character and p.Character:FindFirstChild("Head") then
             local h = p.Character.Head
             local pos, vis = Cam:WorldToViewportPoint(h.Position)
             local m = (Vector2.new(LocalPlayer:GetMouse().X, LocalPlayer:GetMouse().Y) - Vector2.new(pos.X, pos.Y)).Magnitude
@@ -106,47 +119,60 @@ function getTarget()
     return closest
 end
 
+function predictPosition(target)
+    if target and target.Parent:FindFirstChild("HumanoidRootPart") then
+        return target.Position + target.Parent.HumanoidRootPart.Velocity * 0.1
+    end
+    return target.Position
+end
+
 function applyESP()
     for _,p in pairs(Players:GetPlayers()) do
-        if p ~= LocalPlayer and p.Character and p.Character:FindFirstChild("Head") then
+        if p ~= LocalPlayer and p.Character and p.Character:FindFirstChild("Head") and p.Character:FindFirstChild("HumanoidRootPart") then
             local head = p.Character.Head
-            if espOn and not head:FindFirstChild("rcynESP") then
-                local line = Instance.new("Beam")
+            local hrp = p.Character.HumanoidRootPart
+
+            -- Hapus ESP lama
+            if head:FindFirstChild("rcynESP") then head.rcynESP:Destroy() end
+            if hrp:FindFirstChild("rcynBOX") then hrp.rcynBOX:Destroy() end
+
+            if espOn then
+                -- Line ke musuh
+                local beam = Instance.new("Beam")
                 local a0 = Instance.new("Attachment", Cam)
                 local a1 = Instance.new("Attachment", head)
-                line.Name = "rcynESP"
-                line.Attachment0 = a0
-                line.Attachment1 = a1
-                line.Width0 = 0.05
-                line.Width1 = 0.05
-                line.Color = ColorSequence.new(Color3.fromRGB(255, 0, 0))
-                line.FaceCamera = true
-                line.Parent = head
-            elseif not espOn and head:FindFirstChild("rcynESP") then
-                head.rcynESP:Destroy()
+                beam.Name = "rcynESP"
+                beam.Attachment0 = a0
+                beam.Attachment1 = a1
+                beam.Width0 = 0.05
+                beam.Width1 = 0.05
+                beam.Color = ColorSequence.new(Color3.fromRGB(math.random(100,255), math.random(50,150), math.random(100,255)))
+                beam.FaceCamera = true
+                beam.Parent = head
+
+                -- Kotak ESP
+                local box = Instance.new("BoxHandleAdornment")
+                box.Name = "rcynBOX"
+                box.Adornee = hrp
+                box.AlwaysOnTop = true
+                box.ZIndex = 5
+                box.Size = Vector3.new(4, 6, 2)
+                box.Transparency = 0.3
+                box.Color3 = Color3.fromRGB(math.random(120,255), math.random(0,100), math.random(150,255))
+                box.Parent = hrp
             end
         end
     end
 end
 
-function predictPosition(target)
-    if target and target.Parent:FindFirstChild("HumanoidRootPart") then
-        local hrp = target.Parent.HumanoidRootPart
-        local velocity = hrp.Velocity
-        return target.Position + velocity * 0.1
-    end
-    return target.Position
-end
-
-task.spawn(function()
+spawn(function()
     while task.wait(0.02) do
         local t = getTarget()
         if t and aimbotLevel > 0 then
-            local aimPos = prediction and predictPosition(t) or t.Position
+            local pos = prediction and predictPosition(t) or t.Position
             local camPos = Cam.CFrame.Position
-            local direction = (aimPos - camPos).Unit
-            local newLook = camPos + direction * aimbotLevel
-            Cam.CFrame = Cam.CFrame:Lerp(CFrame.new(camPos, newLook), smoothness)
+            local dir = (pos - camPos).Unit
+            Cam.CFrame = Cam.CFrame:Lerp(CFrame.new(camPos, camPos + dir * aimbotLevel), smoothness)
         end
         if espOn then applyESP() end
         if magicOn then
@@ -170,4 +196,10 @@ task.spawn(function()
     end
 end)
 
-print("✅ rcynAIM FINAL V3 ACTIVE: Aim Predict, ESP Line, No Recoil, Legit Aimbot ✅")
+-- [[ TUTUP LOADING ]] --
+task.delay(0.2, function()
+    blur:Destroy()
+    gui:Destroy()
+end)
+
+print("✅ rcynSC.lua FINAL V5 - UI MINIMIZE + ESP BRUTAL DONE ✅")
