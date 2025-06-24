@@ -1,5 +1,5 @@
---// rcynAIM ULTRA-LITE FINAL FIXED 😈✅
--- Fix: Minimize = semua UI hilang, tinggal ikon kecil buat balikin menu
+--// rcynAIM ULTRA-LITE FINAL FIXED SMOOTH AIM 😈🎯
+-- Aimbot sekarang makin smooth & scalable: makin tinggi = makin OP, makin rendah = makin legit
 
 local gui = Instance.new("ScreenGui", game.CoreGui)
 local frame = Instance.new("Frame")
@@ -12,7 +12,7 @@ frame.AnchorPoint = Vector2.new(0.5, 0.5)
 frame.Visible = true
 frame.Parent = gui
 
--- Minimize icon kecil muncul saat UI disembunyiin
+-- Minimize icon muncul saat UI disembunyiin
 local restoreIcon = Instance.new("TextButton")
 restoreIcon.Size = UDim2.new(0, 30, 0, 30)
 restoreIcon.Position = UDim2.new(0, 10, 1, -40)
@@ -45,7 +45,6 @@ minBtn.MouseButton1Click:Connect(function()
     frame.Visible = false
     restoreIcon.Visible = true
 end)
-
 restoreIcon.MouseButton1Click:Connect(function()
     frame.Visible = true
     restoreIcon.Visible = false
@@ -66,16 +65,17 @@ end
 local aimbotLevel = 0.2
 local espOn = false
 local magicOn = false
+local smoothness = 0.02
 
 local btnAimbot = createBtn("Aimbot: 20%", 40)
 local btnESP = createBtn("ESP", 80)
 local btnMagic = createBtn("Magic Bullet", 120)
 
 btnAimbot.MouseButton1Click:Connect(function()
-    if aimbotLevel == 0.2 then aimbotLevel = 0.3 btnAimbot.Text = "Aimbot: 30%"
-    elseif aimbotLevel == 0.3 then aimbotLevel = 0.5 btnAimbot.Text = "Aimbot: 50%"
-    elseif aimbotLevel == 0.5 then aimbotLevel = 1 btnAimbot.Text = "Aimbot: 100%"
-    else aimbotLevel = 0.2 btnAimbot.Text = "Aimbot: 20%" end
+    if aimbotLevel == 0.2 then aimbotLevel = 0.3 smoothness = 0.015 btnAimbot.Text = "Aimbot: 30%"
+    elseif aimbotLevel == 0.3 then aimbotLevel = 0.5 smoothness = 0.01 btnAimbot.Text = "Aimbot: 50%"
+    elseif aimbotLevel == 0.5 then aimbotLevel = 1 smoothness = 0.003 btnAimbot.Text = "Aimbot: 100%"
+    else aimbotLevel = 0.2 smoothness = 0.02 btnAimbot.Text = "Aimbot: 20%" end
 end)
 
 btnESP.MouseButton1Click:Connect(function()
@@ -93,6 +93,7 @@ local Players = game:GetService("Players")
 local LocalPlayer = Players.LocalPlayer
 local Mouse = LocalPlayer:GetMouse()
 local Cam = workspace.CurrentCamera
+local currentTarget = nil
 
 function getTarget()
     local closest, dist = nil, math.huge
@@ -131,12 +132,18 @@ function applyESP()
     end
 end
 
+-- Aimbot smooth system
+function smoothAim(current, targetPos)
+    local direction = (targetPos - current.Position).Unit
+    local newLook = current.Position + direction * aimbotLevel
+    return current:Lerp(CFrame.new(current.Position, newLook), smoothness)
+end
+
 task.spawn(function()
-    while task.wait(0.2) do
-        local t = getTarget()
-        if t and aimbotLevel > 0 then
-            local pos = Cam.CFrame.Position
-            Cam.CFrame = CFrame.new(pos, pos + (t.Position - pos).Unit * aimbotLevel)
+    while task.wait(0.02) do
+        currentTarget = getTarget()
+        if currentTarget and aimbotLevel > 0 then
+            Cam.CFrame = smoothAim(Cam.CFrame, currentTarget.Position)
         end
         if magicOn then
             local e = game:GetService("ReplicatedStorage"):FindFirstChild("Events")
@@ -152,4 +159,4 @@ task.spawn(function()
     end
 end)
 
-print("✅ rcynAIM ULTRA-LITE FINAL - Minimize Fixed + OP Mode Ready ✅")
+print("✅ rcynAIM FINAL SMOOTH AIM ✅")
